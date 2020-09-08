@@ -24,7 +24,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import org.koin.core.context.KoinContextHandler
-import simple.payment.tracker.ListAggregator
+import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.Transaction
 
 @Composable
@@ -45,12 +45,11 @@ private fun TransactionsList(
 ) {
   Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
     val data = KoinContextHandler.get()
-      .get<ListAggregator>()
+      .get<TransactionsRepository>()
       .transactions()
       .toState(initial = emptyList())
 
     val items = data.value
-      .let { values -> if (showAll) values else values.filter { it.payment == null } }
       .let { values ->
         when {
           search.value.text.isEmpty() -> values

@@ -28,9 +28,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import org.koin.core.context.KoinContextHandler
-import simple.payment.tracker.Payment
-import simple.payment.tracker.PaymentsRepository
 import simple.payment.tracker.Transaction
 import java.text.SimpleDateFormat
 import java.time.Instant
@@ -87,27 +84,8 @@ fun DetailsScreen(
             && merchant.value.text.isNotEmpty()
             && category.value != null)
           IconButton(onClick = {
-            if (canSave) ({
-              KoinContextHandler.get().get<PaymentsRepository>()
-                .changeOrCreatePayment(
-                  transaction?.id,
-                  Payment(
-                    notificationId = transaction?.payment?.notificationId
-                      ?: transaction?.notification?.time,
-                    time = transaction?.notification?.time
-                      ?: requireNotNull(
-                        dateFormat.parse(time.value.text)
-                      ).time,
-                    category = category.value!!,
-                    comment = comment.value.text,
-                    merchant = merchant.value.text,
-                    sum = sum.value.text.toInt(),
-                    cancelled = cancelled.value,
-                    trip = trip.value.text.let { if (it.isEmpty()) null else it }
-                  )
-                )
-              currentScreen.value = Screen.List
-            })()
+            println("Save!")
+            currentScreen.value = Screen.ListAll
           }) {
             Text(
               text = "Save",
@@ -150,7 +128,7 @@ fun DetailsScreen(
                 NamedTextFieldInput(
                   header = "on",
                   state = time,
-                  enabled = transaction?.notification == null,
+                  enabled = true,
                   modifier = Modifier.weight(0.5f).padding(start = 16.dp),
                 )
                 NamedTextFieldInput(

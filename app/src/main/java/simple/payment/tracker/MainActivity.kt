@@ -10,11 +10,12 @@ import simple.payment.tracker.compose.PaymentsApp
 
 class MainActivity : AppCompatActivity() {
   private val backs: Backs by inject()
+  private val transactions: TransactionsRepository by inject()
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContent {
-      PaymentsApp()
+      PaymentsApp(backs, transactions)
     }
   }
 

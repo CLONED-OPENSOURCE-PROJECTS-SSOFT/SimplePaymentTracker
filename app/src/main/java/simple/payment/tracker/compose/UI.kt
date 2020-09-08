@@ -3,13 +3,7 @@ package simple.payment.tracker.compose
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.Box
 import androidx.compose.foundation.Text
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.BottomAppBar
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
@@ -25,69 +19,44 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Transaction
+import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.theme.PaymentsTheme
-import kotlin.random.Random.Default.nextInt
 
 sealed class Screen {
-  object List : Screen()
   object ListAll : Screen()
-  object New : Screen()
-  object Monthly : Screen()
   data class Details(val transaction: Transaction) : Screen()
 }
 
 @Composable
-fun PaymentsApp() {
+fun PaymentsApp(backs: Backs, trasactions: TransactionsRepository) {
   PaymentsTheme {
     AppContent()
   }
 }
 
 @Composable
-fun MutableState<Screen>.showNavigation(): Boolean {
-  return when (value) {
-    Screen.List, Screen.ListAll, Screen.Monthly -> {
-      true
-    }
-    Screen.New -> false
-    is Screen.Details -> false
-  }
-}
-
-@Composable
 private fun AppContent() {
-  val currentScreen: MutableState<Screen> = remember { mutableStateOf(Screen.List) }
+  val currentScreen: MutableState<Screen> = remember { mutableStateOf(Screen.ListAll) }
   KoinContextHandler.get().get<Backs>()
     .backPressed
     .commitSubscribe {
-      currentScreen.value = Screen.List
+      currentScreen.value = Screen.ListAll
     }
 
   val search = remember { mutableStateOf(TextFieldValue("")) }
   Scaffold(
     topBar = {
-      if (currentScreen.showNavigation()) {
+      // actually makes no difference
+      if (currentScreen.value == Screen.ListAll) {
         NavigationTopBar(search, currentScreen)
-      }
-    },
-    bottomBar = {
-      when (currentScreen.value) {
-        Screen.List, Screen.ListAll, Screen.Monthly -> {
-          NavigationBottomBar(currentScreen)
-        }
-        Screen.New -> Unit
-        is Screen.Details -> Unit
       }
     },
     bodyContent = {
       Crossfade(currentScreen) { screen ->
         Surface(color = MaterialTheme.colors.background) {
           when (val scr = screen.value) {
-            is Screen.List -> ListScreen(false, currentScreen, search)
             is Screen.ListAll -> ListScreen(true, currentScreen, search)
             is Screen.Details -> DetailsScreen(scr.transaction, currentScreen)
-            is Screen.New -> DetailsScreen(null, currentScreen)
-            is Screen.Monthly -> MonthlyScreen()
           }
         }
       }
@@ -95,25 +64,9 @@ private fun AppContent() {
   )
 }
 
-val borderColors = listOf(
-  Color.Black,
-  Color.DarkGray,
-  Color.Gray,
-  Color.LightGray,
-  Color.White,
-  Color.Red,
-  Color.Green,
-  Color.Blue,
-  Color.Yellow,
-  Color.Cyan,
-  Color.Magenta,
-  Color.Transparent
-)
-
 @Composable
 fun Modifier.debugBorder(): Modifier {
   return this
-  return border(width = 1.dp, color = borderColors[nextInt(0, borderColors.lastIndex)])
 }
 
 @Composable
@@ -136,61 +89,6 @@ private fun NavigationTopBar(
       } else {
         Box(Modifier.debugBorder())
       }
-
-      IconButton(
-        onClick = { currentScreen.value = Screen.New }, modifier = Modifier.debugBorder()
-      ) {
-        Text(text = "Add", style = MaterialTheme.typography.body2)
-      }
     }
   )
-}
-
-@Composable
-private fun NavigationBottomBar(currentScreen: MutableState<Screen>) {
-  BottomAppBar(
-    modifier = Modifier.fillMaxWidth()
-  ) {
-    IconButton(
-      onClick = { currentScreen.value = Screen.List },
-      modifier = Modifier.weight(1f)
-        .highlightIf(currentScreen, Screen.List)
-    ) {
-      Text(
-        text = "Inbox", style = MaterialTheme.typography.body2
-      )
-    }
-
-    IconButton(
-      onClick = { currentScreen.value = Screen.ListAll },
-      modifier = Modifier.weight(1f)
-        .highlightIf(currentScreen, Screen.ListAll)
-    ) {
-      Text(text = "All", style = MaterialTheme.typography.body2)
-    }
-
-    IconButton(
-      onClick = { currentScreen.value = Screen.Monthly },
-      modifier = Modifier.weight(1f)
-        .highlightIf(currentScreen, Screen.Monthly)
-    ) {
-      Text(text = "Stats", style = MaterialTheme.typography.body2)
-    }
-  }
-}
-
-@Composable
-private fun Modifier.highlightIf(
-  currentScreen: MutableState<Screen>,
-  target: Screen
-): Modifier {
-  return when (currentScreen.value) {
-    target -> {
-      background(
-        color = MaterialTheme.colors.onSurface.copy(alpha = 0.1f),
-        shape = RoundedCornerShape(20.dp)
-      )
-    }
-    else -> this
-  }
 }
