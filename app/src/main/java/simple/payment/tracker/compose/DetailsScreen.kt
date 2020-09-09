@@ -73,10 +73,20 @@ fun DetailsScreen(
     topBar = {
       TopAppBar(
         title = {
-          Text(
-            text = "${sum.value.text} to ${merchant.value.text} ${if (cancelled.value) " (cancelled)" else ""}",
-            style = if (cancelled.value) strike else MaterialTheme.typography.body1
-          )
+          if (comment.value.text.contains("Changing the text fixes the issue")) {
+            // 167692837: MutableState is not evaluated for Text(style)
+            Text(
+              // changing the text string fixes the issue because style is also reapplied
+              text = "${sum.value.text} to ${merchant.value.text} ${if (cancelled.value) " (cancelled)" else ""}",
+              style = if (cancelled.value) strike else MaterialTheme.typography.body1
+            )
+          } else {
+            // 167692837: MutableState is not evaluated for Text(style)
+            Text(
+              text = "${sum.value.text} to ${merchant.value.text}",
+              style = if (cancelled.value) strike else MaterialTheme.typography.body1
+            )
+          }
         },
         actions = {
           val canSave = (runCatching<Date?> { dateFormat.parse(time.value.text) }.isSuccess
