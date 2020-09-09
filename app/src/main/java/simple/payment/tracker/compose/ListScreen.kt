@@ -23,29 +23,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import org.koin.core.context.KoinContextHandler
-import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.Transaction
+import simple.payment.tracker.TransactionsRepository
 
 @Composable
 fun ListScreen(
-  showAll: Boolean,
+  transactionsRepository: TransactionsRepository,
   currentScreen: MutableState<Screen>,
   search: State<TextFieldValue>
 ) {
-  TransactionsList(showAll = showAll, currentScreen = currentScreen, search = search)
+  TransactionsList(
+    transactionsRepository = transactionsRepository,
+    currentScreen = currentScreen,
+    search = search
+  )
 }
 
 @Composable
 private fun TransactionsList(
   modifier: Modifier = Modifier,
-  showAll: Boolean,
+  transactionsRepository: TransactionsRepository,
   currentScreen: MutableState<Screen>,
   search: State<TextFieldValue>
 ) {
   Box(modifier = modifier.fillMaxSize().wrapContentSize(Alignment.Center)) {
-    val data = KoinContextHandler.get()
-      .get<TransactionsRepository>()
+    val data = transactionsRepository
       .transactions()
       .toState(initial = emptyList())
 

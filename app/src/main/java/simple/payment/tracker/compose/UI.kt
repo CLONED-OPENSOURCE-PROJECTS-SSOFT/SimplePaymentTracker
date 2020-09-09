@@ -17,7 +17,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import org.koin.core.context.KoinContextHandler
 import simple.payment.tracker.Transaction
 import simple.payment.tracker.TransactionsRepository
 import simple.payment.tracker.theme.PaymentsTheme
@@ -28,16 +27,16 @@ sealed class Screen {
 }
 
 @Composable
-fun PaymentsApp(backs: Backs, trasactions: TransactionsRepository) {
+fun PaymentsApp(backs: Backs, transactions: TransactionsRepository) {
   PaymentsTheme {
-    AppContent()
+    AppContent(backs, transactions)
   }
 }
 
 @Composable
-private fun AppContent() {
+private fun AppContent(backs: Backs, transactions: TransactionsRepository) {
   val currentScreen: MutableState<Screen> = remember { mutableStateOf(Screen.ListAll) }
-  KoinContextHandler.get().get<Backs>()
+  backs
     .backPressed
     .commitSubscribe {
       currentScreen.value = Screen.ListAll
@@ -55,7 +54,7 @@ private fun AppContent() {
       Crossfade(currentScreen) { screen ->
         Surface(color = MaterialTheme.colors.background) {
           when (val scr = screen.value) {
-            is Screen.ListAll -> ListScreen(true, currentScreen, search)
+            is Screen.ListAll -> ListScreen(transactions, currentScreen, search)
             is Screen.Details -> DetailsScreen(scr.transaction, currentScreen)
           }
         }
